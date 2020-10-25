@@ -1,7 +1,5 @@
 package com.lyw.model.signleton;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
-
 /**
  *   饿汉式
  * @author lyw
