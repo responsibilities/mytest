@@ -7,7 +7,7 @@ package com.lyw.model.signleton;
  */
 public class Singleton_4 {
 
-    private static Singleton_4 instance = null;
+    private static volatile Singleton_4 instance; // JIT
 
     private Singleton_4() {
     }
