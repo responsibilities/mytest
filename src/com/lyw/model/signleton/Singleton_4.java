@@ -1,15 +1,29 @@
 package com.lyw.model.signleton;
 
 /**
+ * DCL: double checkout lock
  * @author lyw
- * @date 2020/10/15 21:25
+ * @date 2020/10/28 21:16
  */
-public class Singleton_4 extends Singleton_3 {
+public class Singleton_4 {
 
-    public Singleton_4() {
+    private static Singleton_4 instance = null;
+
+    private Singleton_4() {
     }
 
     public static Singleton_4 getInstance() {
-        return (Singleton_4) Singleton_3.getInstance("Singleton_4");
+        if (instance == null) {
+            synchronized (Singleton_4.class) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                }
+                if (instance == null) {
+                    instance = new Singleton_4();
+                }
+            }
+        }
+        return instance;
     }
 }

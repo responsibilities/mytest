@@ -1,31 +1,25 @@
 package com.lyw.model.signleton;
 
-import java.util.HashMap;
-
 /**
  * @author lyw
- * @date 2020/10/15 21:13
+ * @date 2020/10/28 20:59
  */
 public class Singleton_3 {
+    private static Singleton_3 instance = null;
 
-    // 用来存放对应关系
-    private static HashMap<Object, Object> sinRegistry = new HashMap<Object, Object>(16);
-    private static Singleton_3 instance = new Singleton_3();
-
-    protected Singleton_3() {
+    private Singleton_3() {
     }
 
-    public static Singleton_3 getInstance(String name) {
-        if (name == null) {
-            name = "Singleton_3";
-        }
-        if (sinRegistry.get(name) == null) {
-            try {
-                sinRegistry.put(name, Class.forName(name).newInstance());
-            } catch (Exception e) {
-                e.printStackTrace();
+    public static Singleton_3 getInstance() {
+        synchronized (Singleton_3.class) {
+            if (instance == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+                instance = new Singleton_3();
             }
+            return instance;
         }
-        return (Singleton_3) sinRegistry.get(name);
     }
 }

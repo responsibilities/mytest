@@ -12,9 +12,14 @@ public class Singleton_2 {
 
     private Singleton_2() {}
 
-    public static synchronized Singleton_2 getInstance() {
-        if (instance == null)
-            return new Singleton_2();
+    public static Singleton_2 getInstance() {
+        if (instance == null) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {}
+            instance = new Singleton_2();
+            return instance;
+        }
         return instance;
     }
 }
