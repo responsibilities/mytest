@@ -3,7 +3,6 @@ package com.lyw.model.mybatis.test;
 import com.lyw.model.mybatis.annotation.Param;
 import com.lyw.model.mybatis.annotation.Select;
 import com.lyw.model.mybatis.mapper.UserMapper;
-import com.sun.javafx.sg.prism.web.NGWebView;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,6 +12,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * eg:
+ * <code>
+ *     select * form table_name where id = #{id} and username = #{username}
+ * </code><br/>
+ * <code>
+ *     select * form table_name where id = 2235 and username = fdsaf
+ * </code>
+ * @author lyw
+ * @date 2020/11/04 22:06
+ */
 public class Test {
     public static void main(String[] args) {
         UserMapper userMapper = (UserMapper) Proxy.newProxyInstance(Test.class.getClassLoader(), new Class[]{UserMapper.class}, new InvocationHandler() {
@@ -21,37 +31,34 @@ public class Test {
                 Map<String, Object> map = buildMethodArgNameMap(method, args);
                 System.err.println(Arrays.toString(args));
                 Select annotation = method.getAnnotation(Select.class);
-                if (annotation != null) {
-                    String[] value = annotation.value();
-                    String sql = parseSQL(value[0], map);
-                    System.err.println("sql:"+sql);
-                    System.err.println(Arrays.toString(value));
-                }
+                if (annotation == null)
+                    throw new RuntimeException("Select注解中的SQL语句为空");
+                String[] value = annotation.value();
+                String sql = parseSQL(value[0], map);
+                System.err.println("sql:" + sql);
                 return null;
             }
         });
-        userMapper.getById(235);
+        userMapper.getPart(2235, "fdsaf");
     }
 
-    private static String parseSQL(String sql, Map map) {
+    private static String parseSQL(String sql, Map<String, Object> methodArgMap) {
         StringBuilder sb = new StringBuilder();
         int length = sql.length();
         for (int i = 0; i < length; i++) {
             char c = sql.charAt(i);
-            if (c == '#') {
-                int nextIndex = i + 1;
-                if (sql.charAt(nextIndex) != '{') {
-                    throw new RuntimeException(String.format("这里应该为#\nsql:%s\nindex:%d",
-                            sb.toString(), nextIndex));
-                }
-                StringBuilder argSB = new StringBuilder();
-                i = parseSQLArg(argSB, sql, nextIndex);
-                String argName = argSB.toString();
-                Object argValue = map.get(argName);
-                sb.append(argValue.toString());
+            if (c != '#') {
+                sb.append(c);
                 continue;
             }
-            sb.append(c);
+            int nextIndex = i + 1;
+            if (sql.charAt(nextIndex) != '{')
+                throw new RuntimeException(String.format("这里应该为#\nsql:%s\nindex:%d", sb.toString(), nextIndex));
+            StringBuilder argSB = new StringBuilder();
+            i = parseSQLArg(argSB, sql, nextIndex);
+            String argName = argSB.toString();
+            Object argValue = methodArgMap.get(argName);
+            sb.append(argValue.toString());
         }
         return sb.toString();
     }
@@ -64,9 +71,7 @@ public class Test {
                 argSB.append(c);
                 continue;
             }
-            if (c == '}') {
-                return nextIndex;
-            }
+            return nextIndex;
         }
         throw new RuntimeException(String.format("缺少右括号\nindex:%d", nextIndex));
     }
@@ -83,17 +88,15 @@ public class Test {
         Parameter[] parameters = method.getParameters();
         if (parameters.length != args.length)
             throw new RuntimeException("方法入参与解析参数数量不一致");
-        final int[] index = {0};
+        int[] index = {0};
         Arrays.asList(parameters).forEach(parameter -> {
             Param annotation = parameter.getAnnotation(Param.class);
-            if (annotation != null) {
-                String value = annotation.value();
-                nameArgMap.put(value, args[index[0]]);
-                index[0]++;
-//                System.err.println(value);
-            }
+            if (annotation == null)
+                throw new RuntimeException("Param注解中的方法形参为空");
+            String value = annotation.value();
+            nameArgMap.put(value, args[index[0]]);
+            index[0]++;
         });
-//        System.err.println("nameArgMap:"+nameArgMap);
         return nameArgMap;
     }
 }

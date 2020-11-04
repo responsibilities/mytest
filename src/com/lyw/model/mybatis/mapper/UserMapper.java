@@ -9,8 +9,8 @@ public interface UserMapper {
     void getById(@Param("id") int id);
 
 //    @Select("select * form table_name")
-    @Select("select * form table_name where id = #{id}")
-//    @Select("select * form table_name where id = #{id} and username = #{userName}")
+//    @Select("select * form table_name where id = #{id}")
+    @Select("select * form table_name where id = #{id} and username = #{userName}")
     void getPart(@Param("id") int id, @Param("userName") String userName);
 
     void getList();
